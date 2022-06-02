@@ -2,11 +2,17 @@ import { buildResponse } from "./response";
 
 export class Counter implements DurableObject {
   // Store this.state for later access
-  constructor(private readonly state: DurableObjectState) {}
+  constructor(private readonly state: DurableObjectState) {
+        this.state.blockConcurrencyWhile(async () => {
+                await this.state.storage.put("foo", "bar");
+        });
+  }
 
   async fetch(request: Request) {
     // Get the current count, defaulting to 0
     let value = (await this.state.storage.get<number>("count")) ?? 0;
+	let foo = await this.state.storage.get("foo");
+	console.log(foo);
 
     const { pathname } = new URL(request.url);
     let emoji = "➡️";
